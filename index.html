@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>席次表PowerPoint変換ツール</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>席次表 → PowerPoint 変換</h1>
+            <p class="subtitle">PDF・JPEG・PNG をスライドに変換します（16:9 / レイアウト維持）</p>
+        </header>
+
+        <main>
+            <div id="dropZone" class="drop-zone">
+                <div class="drop-zone-inner">
+                    <svg class="upload-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <p class="drop-text">ここにファイルをドラッグ＆ドロップ</p>
+                    <p class="drop-subtext">または</p>
+                    <button id="selectBtn" class="btn-primary">ファイルを選択</button>
+                    <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" multiple hidden>
+                    <p class="drop-hint">対応形式: PDF / JPEG / PNG（複数選択可）</p>
+                </div>
+            </div>
+
+            <div id="fileList" class="file-list" style="display:none;">
+                <h2>選択されたファイル</h2>
+                <ul id="fileListItems"></ul>
+                <div class="actions">
+                    <button id="convertBtn" class="btn-primary btn-large">PowerPointに変換</button>
+                    <button id="clearBtn" class="btn-secondary">クリア</button>
+                </div>
+            </div>
+
+            <div id="progress" class="progress" style="display:none;">
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                <p id="progressText" class="progress-text">準備中...</p>
+            </div>
+
+            <div id="result" class="result" style="display:none;">
+                <svg class="check-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <p class="result-text">変換完了！ダウンロードが始まります。</p>
+                <button id="resetBtn" class="btn-secondary">続けて別のファイルを変換</button>
+            </div>
+        </main>
+
+        <footer>
+            <p class="privacy-note">
+                ファイルはお使いのブラウザ内で処理されます。サーバーには一切アップロードされません。
+            </p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@v3.12.0/dist/pptxgen.bundle.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
