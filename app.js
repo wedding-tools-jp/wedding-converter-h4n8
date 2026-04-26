@@ -5,6 +5,9 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 const SLIDE_W = 13.333;
 const SLIDE_H = 7.5;
 const PDF_RENDER_SCALE = 2.0;
+const BG_COLOR = '000000';
+const WEEKEND_RANGE_MONTHS = 3;
+const DOW_LABELS = ['日', '月', '火', '水', '木', '金', '土'];
 
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
@@ -18,8 +21,14 @@ const progressFill = document.getElementById('progressFill');
 const progressText = document.getElementById('progressText');
 const result = document.getElementById('result');
 const resetBtn = document.getElementById('resetBtn');
+const dateSelect = document.getElementById('dateSelect');
+const dateCustom = document.getElementById('dateCustom');
+const customerName = document.getElementById('customerName');
+const filenamePreview = document.getElementById('filenamePreview');
 
 let selectedFiles = [];
+
+initDateSelector();
 
 selectBtn.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -50,17 +59,124 @@ dropZone.addEventListener('drop', (e) => {
 
 clearBtn.addEventListener('click', () => {
     selectedFiles = [];
+    customerName.value = '';
     renderFileList();
+    updatePreview();
 });
 
 resetBtn.addEventListener('click', () => {
     selectedFiles = [];
+    customerName.value = '';
     renderFileList();
+    updatePreview();
     result.style.display = 'none';
     dropZone.style.display = 'block';
 });
 
 convertBtn.addEventListener('click', convertToPptx);
+customerName.addEventListener('input', updatePreview);
+dateSelect.addEventListener('change', () => {
+    if (dateSelect.value === '__other__') {
+        dateCustom.style.display = 'inline-block';
+        if (!dateCustom.value) dateCustom.value = formatYMD(new Date());
+        dateCustom.focus();
+    } else {
+        dateCustom.style.display = 'none';
+    }
+    updatePreview();
+});
+dateCustom.addEventListener('change', updatePreview);
+
+function initDateSelector() {
+    const options = generateWeekendOptions();
+    const defaultDate = formatYMD(getDefaultDate());
+
+    options.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt.value;
+        option.textContent = opt.label;
+        if (opt.value === defaultDate) option.selected = true;
+        dateSelect.appendChild(option);
+    });
+
+    const otherOpt = document.createElement('option');
+    otherOpt.value = '__other__';
+    otherOpt.textContent = 'その他の日付を入力...';
+    dateSelect.appendChild(otherOpt);
+
+    updatePreview();
+}
+
+function getDefaultDate() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dow = today.getDay();
+    if (dow === 0 || dow === 6) return today;
+    const daysUntilSat = (6 - dow + 7) % 7;
+    const next = new Date(today);
+    next.setDate(today.getDate() + daysUntilSat);
+    return next;
+}
+
+function generateWeekendOptions() {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setMonth(start.getMonth() + WEEKEND_RANGE_MONTHS);
+
+    const options = [];
+    const cursor = new Date(start);
+    while (cursor <= end) {
+        const dow = cursor.getDay();
+        if (dow === 0 || dow === 6) {
+            options.push({ value: formatYMD(cursor), label: formatLabel(cursor) });
+        }
+        cursor.setDate(cursor.getDate() + 1);
+    }
+    return options;
+}
+
+function formatYMD(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
+function formatLabel(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}/${m}/${day} (${DOW_LABELS[d.getDay()]})`;
+}
+
+function getCurrentDateStr() {
+    if (dateSelect.value === '__other__') {
+        return dateCustom.value || '';
+    }
+    return dateSelect.value;
+}
+
+function sanitizeName(name) {
+    return name.replace(/[<>:"/\\|?*\x00-\x1f]/g, '_').trim();
+}
+
+function buildFilename() {
+    const dateStr = getCurrentDateStr();
+    const ymd = dateStr.replace(/-/g, '');
+    const name = sanitizeName(customerName.value.trim());
+    if (!ymd) return '';
+    if (!name) return `${ymd}.pptx`;
+    return `${ymd}_${name}.pptx`;
+}
+
+function updatePreview() {
+    const fname = buildFilename();
+    const hasName = customerName.value.trim().length > 0;
+    const hasDate = getCurrentDateStr().length > 0;
+    filenamePreview.textContent = fname || '—';
+    convertBtn.disabled = !(hasName && hasDate && selectedFiles.length > 0);
+}
 
 function handleFiles(files) {
     const accepted = files.filter(f => {
@@ -79,6 +195,7 @@ function handleFiles(files) {
 
     selectedFiles = [...selectedFiles, ...accepted];
     renderFileList();
+    updatePreview();
 }
 
 function renderFileList() {
@@ -108,6 +225,7 @@ function renderFileList() {
             const idx = parseInt(e.target.dataset.index);
             selectedFiles.splice(idx, 1);
             renderFileList();
+            updatePreview();
         });
     });
 }
@@ -132,6 +250,11 @@ function updateProgress(current, total, label) {
 
 async function convertToPptx() {
     if (selectedFiles.length === 0) return;
+    const filename = buildFilename();
+    if (!filename) {
+        alert('日付と客名を入力してください。');
+        return;
+    }
 
     fileList.style.display = 'none';
     dropZone.style.display = 'none';
@@ -148,7 +271,6 @@ async function convertToPptx() {
             if (ext === 'pdf') {
                 const pdf = await loadPdf(file);
                 totalPages += pdf.numPages;
-                pdf._cachedFile = file;
                 slideImages.push({ type: 'pdf', pdf, file });
             } else {
                 totalPages += 1;
@@ -180,13 +302,12 @@ async function convertToPptx() {
         updateProgress(processed, totalPages, 'PowerPointを生成中');
 
         const pptx = new PptxGenJS();
-        pptx.layout = 'LAYOUT_WIDE';
         pptx.defineLayout({ name: 'CUSTOM_16_9', width: SLIDE_W, height: SLIDE_H });
         pptx.layout = 'CUSTOM_16_9';
 
         for (const slide of renderedSlides) {
             const s = pptx.addSlide();
-            s.background = { color: 'FFFFFF' };
+            s.background = { color: BG_COLOR };
             const fit = calculateFit(slide.dims.width, slide.dims.height);
             s.addImage({
                 data: slide.dataUrl,
@@ -197,12 +318,13 @@ async function convertToPptx() {
             });
         }
 
-        const filename = generateFilename();
         await pptx.writeFile({ fileName: filename });
 
         progress.style.display = 'none';
         result.style.display = 'block';
         selectedFiles = [];
+        customerName.value = '';
+        updatePreview();
     } catch (err) {
         console.error(err);
         alert('変換中にエラーが発生しました：\n' + (err.message || err));
@@ -269,14 +391,4 @@ async function renderPdfPage(pdf, pageNum) {
     await page.render({ canvasContext: ctx, viewport }).promise;
 
     return canvas.toDataURL('image/jpeg', 0.92);
-}
-
-function generateFilename() {
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, '0');
-    const d = String(now.getDate()).padStart(2, '0');
-    const h = String(now.getHours()).padStart(2, '0');
-    const min = String(now.getMinutes()).padStart(2, '0');
-    return `席次表_${y}${m}${d}_${h}${min}.pptx`;
 }

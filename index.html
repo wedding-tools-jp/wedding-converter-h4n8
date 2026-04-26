@@ -33,8 +33,24 @@
             <div id="fileList" class="file-list" style="display:none;">
                 <h2>選択されたファイル</h2>
                 <ul id="fileListItems"></ul>
+
+                <div class="filename-inputs">
+                    <div class="input-group">
+                        <label for="dateSelect">日付</label>
+                        <div class="date-wrap">
+                            <select id="dateSelect" class="select-input"></select>
+                            <input type="date" id="dateCustom" class="date-input" style="display:none;">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="customerName">客名</label>
+                        <input type="text" id="customerName" class="text-input" placeholder="例: 佐々木・楠本" autocomplete="off">
+                    </div>
+                    <p class="filename-preview">ファイル名: <span id="filenamePreview">—</span></p>
+                </div>
+
                 <div class="actions">
-                    <button id="convertBtn" class="btn-primary btn-large">PowerPointに変換</button>
+                    <button id="convertBtn" class="btn-primary btn-large" disabled>PowerPointに変換</button>
                     <button id="clearBtn" class="btn-secondary">クリア</button>
                 </div>
             </div>
