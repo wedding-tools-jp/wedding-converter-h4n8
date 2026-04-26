@@ -6,139 +6,281 @@
     <meta name="robots" content="noindex, nofollow">
     <title>使い方 - 席次表PowerPoint変換</title>
     <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
-            background: #f5f7fa;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf3 100%);
             color: #2c3e50;
             line-height: 1.7;
-            max-width: 720px;
-            margin: 0 auto;
+            min-height: 100vh;
             padding: 40px 20px;
         }
+        .container {
+            max-width: 760px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 48px 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
         h1 {
-            font-size: 24px;
-            border-bottom: 3px solid #4a90e2;
-            padding-bottom: 12px;
-            margin-bottom: 24px;
+            font-size: 26px;
+            color: #1a2a3a;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .lead {
+            color: #6c7a89;
+            font-size: 14px;
+            margin-bottom: 32px;
         }
         h2 {
             font-size: 18px;
-            margin-top: 32px;
-            margin-bottom: 12px;
+            margin: 40px 0 16px;
             color: #1a2a3a;
-        }
-        .step {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 16px;
             border-left: 4px solid #4a90e2;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            padding-left: 12px;
+            font-weight: 600;
+        }
+        .privacy-banner {
+            background: #e8f5e9;
+            border-left: 4px solid #27ae60;
+            padding: 16px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #1e6b3a;
+        }
+        .privacy-banner strong { color: #14532d; }
+        .step {
+            margin-bottom: 32px;
+            padding-bottom: 32px;
+            border-bottom: 1px solid #e8ecf3;
+        }
+        .step:last-of-type {
+            border-bottom: none;
+        }
+        .step-head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
         }
         .step-num {
-            display: inline-block;
-            width: 28px;
-            height: 28px;
-            line-height: 28px;
+            width: 32px;
+            height: 32px;
+            line-height: 32px;
             text-align: center;
             background: #4a90e2;
             color: white;
             border-radius: 50%;
             font-weight: 600;
-            margin-right: 12px;
+            font-size: 15px;
+            flex-shrink: 0;
+        }
+        .step-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #1a2a3a;
+        }
+        .step-body {
+            color: #4a5568;
+            font-size: 14px;
+            margin-left: 44px;
+        }
+        .step-body p { margin-bottom: 12px; }
+        .screenshot {
+            margin: 16px 0 0 44px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e8ecf3;
+            background: #fafbfc;
+        }
+        .screenshot img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+        .screenshot-cap {
+            font-size: 12px;
+            color: #95a5a6;
+            text-align: center;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border-top: 1px solid #e8ecf3;
         }
         .note {
             background: #fff8e1;
             border-left: 4px solid #f39c12;
-            padding: 16px;
+            padding: 12px 16px;
             border-radius: 4px;
-            margin: 16px 0;
-            font-size: 14px;
+            font-size: 13px;
+            margin: 12px 0 0 44px;
+            color: #6b4f00;
         }
-        .privacy {
-            background: #e8f5e9;
-            border-left: 4px solid #27ae60;
-            padding: 16px;
+        .tip {
+            background: #eef5ff;
+            border-left: 4px solid #4a90e2;
+            padding: 12px 16px;
             border-radius: 4px;
-            margin: 16px 0;
-            font-size: 14px;
+            font-size: 13px;
+            margin: 12px 0 0 44px;
+            color: #1e3a5f;
         }
         ul {
-            padding-left: 24px;
+            padding-left: 22px;
         }
-        li {
-            margin-bottom: 6px;
+        ul li {
+            margin-bottom: 4px;
         }
         code {
             background: #ecf0f4;
             padding: 2px 8px;
             border-radius: 4px;
-            font-family: "Consolas", monospace;
+            font-family: "Consolas", "Menlo", monospace;
             font-size: 13px;
+            color: #2c3e50;
+        }
+        .faq h3 {
+            font-size: 15px;
+            color: #1a2a3a;
+            margin-top: 20px;
+            margin-bottom: 6px;
+        }
+        .faq p {
+            color: #4a5568;
+            font-size: 14px;
+            margin-bottom: 12px;
         }
     </style>
 </head>
 <body>
-    <h1>席次表PowerPoint変換ツール 使い方</h1>
+    <div class="container">
+        <h1>席次表 → PowerPoint 変換 使い方</h1>
+        <p class="lead">席次表のPDFや画像を、そのままPowerPointスライドにできるツールです。</p>
 
-    <div class="privacy">
-        <strong>安心してお使いください</strong><br>
-        ファイルはお使いのブラウザの中だけで処理されます。インターネット上にアップロードされることはありません。
+        <div class="privacy-banner">
+            <strong>安心してお使いいただけます</strong><br>
+            ファイルは皆さまのパソコンの中だけで処理されます。インターネット上にアップロードされることはありません。
+        </div>
+
+        <h2>使い方の流れ</h2>
+
+        <div class="step">
+            <div class="step-head">
+                <div class="step-num">1</div>
+                <div class="step-title">ファイルを選ぶ</div>
+            </div>
+            <div class="step-body">
+                <p>席次表のファイルを画面中央のエリアに<strong>ドラッグ＆ドロップ</strong>するか、<strong>「ファイルを選択」ボタン</strong>をクリックして選びます。</p>
+                <p>対応形式: <code>PDF</code> / <code>JPEG</code> / <code>PNG</code></p>
+            </div>
+            <div class="screenshot">
+                <img src="images/01.jpg" alt="ドラッグ＆ドロップエリア">
+                <div class="screenshot-cap">ファイルをここに置くか、ボタンから選択</div>
+            </div>
+            <div class="note">
+                同時に処理できるファイルは<strong>最大2件</strong>までです。
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-head">
+                <div class="step-num">2</div>
+                <div class="step-title">プレビューで確認する</div>
+            </div>
+            <div class="step-body">
+                <p>右側に、PowerPointで表示されるイメージそのままの<strong>16:9プレビュー</strong>が表示されます。黒い余白の入り方も実際のスライドと同じです。</p>
+            </div>
+            <div class="screenshot">
+                <img src="images/02.jpg" alt="プレビュー表示">
+                <div class="screenshot-cap">右側に本番イメージがリアルタイム表示</div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-head">
+                <div class="step-num">3</div>
+                <div class="step-title">挙式日を選ぶ</div>
+            </div>
+            <div class="step-body">
+                <p>左の<strong>「日付」ドロップダウン</strong>には、今日から3ヶ月先までの土日が並んでいます。直近の土日が最初から選ばれているので、そのまま使うか別の日を選んでください。</p>
+            </div>
+            <div class="screenshot">
+                <img src="images/03.jpg" alt="土日ドロップダウン">
+                <div class="screenshot-cap">土日が並んだドロップダウン</div>
+            </div>
+            <div class="step-body" style="margin-top: 16px;">
+                <p>平日や祝日に挙式の場合は、<strong>右側のカレンダーアイコン</strong>をクリックすると、好きな日付を選べるカレンダーが開きます。</p>
+            </div>
+            <div class="screenshot">
+                <img src="images/04.jpg" alt="カレンダー画面">
+                <div class="screenshot-cap">カレンダーから任意の日付を選択</div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-head">
+                <div class="step-num">4</div>
+                <div class="step-title">ご両家名を入れる</div>
+            </div>
+            <div class="step-body">
+                <p>「ご両家名」欄に<strong>両家のお名前を「・」でつないで</strong>入れてください（例: <code>三本・神野</code>）。</p>
+                <p>「家」は自動で末尾につくので、入力する必要はありません。</p>
+                <p>下にファイル名のプレビューが表示されます。確認してください。</p>
+            </div>
+            <div class="screenshot">
+                <img src="images/05.jpg" alt="ご両家名入力">
+                <div class="screenshot-cap">ファイル名は「日付_両家名家.pptx」に自動生成</div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-head">
+                <div class="step-num">5</div>
+                <div class="step-title">PowerPointに変換</div>
+            </div>
+            <div class="step-body">
+                <p><strong>「PowerPointに変換」ボタン</strong>をクリックすると、変換が始まります。</p>
+                <p>完了すると、PowerPointファイルの保存画面が出ます。<strong>そのまま「保存」をクリック</strong>してください（ファイル名は自動で入力済みです）。</p>
+            </div>
+            <div class="screenshot">
+                <img src="images/06.jpg" alt="保存ダイアログ">
+                <div class="screenshot-cap">ファイル名は自動入力されているのでそのまま保存</div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-head">
+                <div class="step-num">6</div>
+                <div class="step-title">PowerPointで開く</div>
+            </div>
+            <div class="step-body">
+                <p>保存したファイルをダブルクリックするとPowerPointが開きます。すぐにスライド表示で投影できます。</p>
+            </div>
+            <div class="screenshot">
+                <img src="images/07.jpg" alt="PowerPoint表示結果">
+                <div class="screenshot-cap">プレビュー通りの仕上がりに</div>
+            </div>
+            <div class="tip">
+                投影時は <strong>F5キー</strong> でスライドショーが開始できます。
+            </div>
+        </div>
+
+        <h2>よくある質問</h2>
+
+        <div class="faq">
+            <h3>古いPowerPointでも開けますか？</h3>
+            <p>PowerPoint 2007以降であれば問題なく開けます。式場のWindows PCならまず大丈夫です。</p>
+
+            <h3>ファイルが大きくて時間がかかります</h3>
+            <p>大きなPDF（50MB以上）は変換に時間がかかります。途中でタブやブラウザを閉じないでください。</p>
+
+            <h3>推奨ブラウザは？</h3>
+            <p><strong>Google Chrome</strong> または <strong>Microsoft Edge</strong> を推奨します。</p>
+
+            <h3>うまく動かないとき</h3>
+            <p>ページを <code>Ctrl + F5</code> で再読み込みしてみてください。それでも改善しない場合は管理者までご連絡ください。</p>
+        </div>
     </div>
-
-    <h2>変換できるファイル</h2>
-    <ul>
-        <li>PDF ファイル（.pdf）</li>
-        <li>JPEG 画像（.jpg / .jpeg）</li>
-        <li>PNG 画像（.png）</li>
-    </ul>
-
-    <h2>使い方</h2>
-
-    <div class="step">
-        <span class="step-num">1</span>
-        <strong>ファイルを選ぶ</strong>
-        <p>画面中央のエリアにファイルを<strong>ドラッグ＆ドロップ</strong>するか、「ファイルを選択」ボタンをクリックしてファイルを選びます。複数ファイルを一度に選ぶこともできます。</p>
-    </div>
-
-    <div class="step">
-        <span class="step-num">2</span>
-        <strong>選んだファイルを確認する</strong>
-        <p>選んだファイルが一覧で表示されます。間違えた場合は「×」ボタンで削除できます。「クリア」ボタンですべて削除できます。</p>
-    </div>
-
-    <div class="step">
-        <span class="step-num">3</span>
-        <strong>「PowerPointに変換」をクリック</strong>
-        <p>変換が始まります。ページ数が多いと少し時間がかかります（目安：10ページで5〜10秒）。</p>
-    </div>
-
-    <div class="step">
-        <span class="step-num">4</span>
-        <strong>ダウンロード</strong>
-        <p>変換が終わると自動でダウンロードが始まります。ファイル名は「席次表_日付_時刻.pptx」になります。</p>
-    </div>
-
-    <h2>仕上がりについて</h2>
-    <ul>
-        <li>スライドサイズは <strong>16:9（ワイド）</strong>で固定です</li>
-        <li>元の画像が縦長や4:3の場合、<strong>レイアウトを崩さず</strong>に16:9のスライド内に配置します（左右や上下に余白が入ります）</li>
-        <li>PDFは<strong>1ページ＝1スライド</strong>に変換されます</li>
-        <li>画像ファイルは<strong>1ファイル＝1スライド</strong>になります</li>
-        <li>変換後のスライドは画像として配置されるため、テキストの編集はできません</li>
-    </ul>
-
-    <div class="note">
-        <strong>うまく動かないとき</strong><br>
-        <ul style="margin-top: 8px;">
-            <li>ブラウザは <strong>Chrome / Edge</strong> を推奨します（Safariは一部機能が動かない場合があります）</li>
-            <li>大きなPDFファイル（50MB以上）は時間がかかります。途中でタブを閉じないでください</li>
-            <li>ファイルが破損している場合は変換できません</li>
-        </ul>
-    </div>
-
-    <h2>困ったら</h2>
-    <p>うまくいかない場合は管理者までご連絡ください。</p>
-
 </body>
 </html>
