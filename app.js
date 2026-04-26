@@ -356,7 +356,7 @@ async function convertToPptx() {
         updatePreview();
     } catch (err) {
         console.error(err);
-        alert('変換中にエラーが発生しました：\n' + (err.message || err));
+        alert('変換中にエラーが発生しました。Ctrl+F5で再読み込みしてからお試しください。');
         progress.style.display = 'none';
         dropZone.style.display = 'block';
         renderFileList();

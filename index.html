@@ -107,8 +107,17 @@
         </footer>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs" type="module"></script>
-    <script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@v3.12.0/dist/pptxgen.bundle.js"></script>
+    <link rel="modulepreload"
+          href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs"
+          integrity="sha384-uwJM5C0hGZH5Ed/vHx4Ht1PUd8ABIDVIcLbHydZOdFL5eTUG8Jdr32xNVIyn0kYH"
+          crossorigin="anonymous">
+    <link rel="modulepreload"
+          href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs"
+          integrity="sha384-NVnhtZrGsIwDcnD5XVrDINOVzrQT0KzaOPpVmavjhwAaVWUtLcgQW7Cua6BKLsEA"
+          crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@v3.12.0/dist/pptxgen.bundle.js"
+            integrity="sha384-Cck14aA9cifjYolcnjebXRfWGkz5ltHMBiG4px/j8GS+xQcb7OhNQWZYyWjQ+UwQ"
+            crossorigin="anonymous"></script>
     <script type="module" src="app.js"></script>
 </body>
 </html>
