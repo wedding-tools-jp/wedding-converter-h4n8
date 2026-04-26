@@ -40,7 +40,15 @@
                         <div class="date-wrap">
                             <select id="dateSelect" class="select-input" title="土日から選択"></select>
                             <span class="date-other-label">その他の日付を選択 →</span>
-                            <input type="date" id="dateCustom" class="date-input">
+                            <button type="button" id="dateIconBtn" class="date-icon-btn" title="カレンダーから選ぶ" aria-label="カレンダーを開く">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                            </button>
+                            <input type="date" id="dateCustom" class="date-input-hidden" tabindex="-1" aria-hidden="true">
                         </div>
                     </div>
                     <div class="input-group">

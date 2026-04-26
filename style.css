@@ -187,15 +187,38 @@ main {
     min-width: 160px;
 }
 
-.date-wrap .date-input {
-    flex: 0 0 auto;
-    min-width: 140px;
-}
-
 .date-other-label {
     color: #6c7a89;
     font-size: 13px;
     white-space: nowrap;
+}
+
+.date-icon-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: #6c7a89;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.date-icon-btn:hover {
+    color: #4a90e2;
+    background: #eef5ff;
+}
+
+.date-input-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+    border: 0;
+    padding: 0;
 }
 
 .name-wrap {

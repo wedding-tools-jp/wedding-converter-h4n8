@@ -23,6 +23,7 @@ const result = document.getElementById('result');
 const resetBtn = document.getElementById('resetBtn');
 const dateSelect = document.getElementById('dateSelect');
 const dateCustom = document.getElementById('dateCustom');
+const dateIconBtn = document.getElementById('dateIconBtn');
 const customerName = document.getElementById('customerName');
 const filenamePreview = document.getElementById('filenamePreview');
 
@@ -79,6 +80,19 @@ customerName.addEventListener('input', updatePreview);
 dateSelect.addEventListener('change', () => {
     dateCustom.value = dateSelect.value;
     updatePreview();
+});
+
+dateIconBtn.addEventListener('click', () => {
+    if (typeof dateCustom.showPicker === 'function') {
+        try {
+            dateCustom.showPicker();
+            return;
+        } catch (e) {
+            // fall through
+        }
+    }
+    dateCustom.focus();
+    dateCustom.click();
 });
 
 dateCustom.addEventListener('change', () => {
