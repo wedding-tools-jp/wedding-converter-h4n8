@@ -181,6 +181,20 @@ main {
     align-items: center;
 }
 
+.name-wrap {
+    flex: 1;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.name-suffix {
+    font-size: 16px;
+    color: #2c3e50;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
 .select-input,
 .date-input,
 .text-input {

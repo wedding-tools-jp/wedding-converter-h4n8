@@ -88,6 +88,11 @@ dateSelect.addEventListener('change', () => {
 dateCustom.addEventListener('change', updatePreview);
 
 function initDateSelector() {
+    const otherOpt = document.createElement('option');
+    otherOpt.value = '__other__';
+    otherOpt.textContent = 'その他の日付を入力...';
+    dateSelect.appendChild(otherOpt);
+
     const options = generateWeekendOptions();
     const defaultDate = formatYMD(getDefaultDate());
 
@@ -98,11 +103,6 @@ function initDateSelector() {
         if (opt.value === defaultDate) option.selected = true;
         dateSelect.appendChild(option);
     });
-
-    const otherOpt = document.createElement('option');
-    otherOpt.value = '__other__';
-    otherOpt.textContent = 'その他の日付を入力...';
-    dateSelect.appendChild(otherOpt);
 
     updatePreview();
 }
@@ -164,10 +164,11 @@ function sanitizeName(name) {
 function buildFilename() {
     const dateStr = getCurrentDateStr();
     const ymd = dateStr.replace(/-/g, '');
-    const name = sanitizeName(customerName.value.trim());
+    const rawName = customerName.value.trim().replace(/家$/, '');
+    const name = sanitizeName(rawName);
     if (!ymd) return '';
     if (!name) return `${ymd}.pptx`;
-    return `${ymd}_${name}.pptx`;
+    return `${ymd}_${name}家.pptx`;
 }
 
 function updatePreview() {
