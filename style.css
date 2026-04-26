@@ -183,72 +183,19 @@ main {
 }
 
 .date-wrap .select-input {
-    flex: 2;
+    flex: 1;
     min-width: 160px;
 }
 
-.date-other-btn {
-    flex: 1;
-    min-width: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 10px 12px;
-    border: 1px dashed #c5cdd9;
-    border-radius: 6px;
-    background: white;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 14px;
+.date-wrap .date-input {
+    flex: 0 0 auto;
+    min-width: 140px;
+}
+
+.date-other-label {
     color: #6c7a89;
-    transition: all 0.15s ease;
-}
-
-.date-other-btn:hover {
-    border-color: #4a90e2;
-    color: #4a90e2;
-    background: #f5faff;
-}
-
-.date-other-btn.has-date {
-    border-style: solid;
-    border-color: #c5cdd9;
-    color: #2c3e50;
-    font-weight: 500;
-}
-
-.date-other-text {
-    flex: 1;
-    text-align: left;
-}
-
-.date-other-arrow {
-    color: #95a5a6;
-    font-weight: 600;
-}
-
-.date-other-btn:hover .date-other-arrow {
-    color: #4a90e2;
-}
-
-.date-other-btn.has-date .date-other-arrow {
-    display: none;
-}
-
-.date-other-icon {
-    font-size: 16px;
-    line-height: 1;
-}
-
-.date-input-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-    pointer-events: none;
-    border: 0;
-    padding: 0;
+    font-size: 13px;
+    white-space: nowrap;
 }
 
 .name-wrap {

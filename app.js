@@ -23,8 +23,6 @@ const result = document.getElementById('result');
 const resetBtn = document.getElementById('resetBtn');
 const dateSelect = document.getElementById('dateSelect');
 const dateCustom = document.getElementById('dateCustom');
-const dateOtherBtn = document.getElementById('dateOtherBtn');
-const dateOtherText = dateOtherBtn.querySelector('.date-other-text');
 const customerName = document.getElementById('customerName');
 const filenamePreview = document.getElementById('filenamePreview');
 
@@ -80,50 +78,14 @@ customerName.addEventListener('input', updatePreview);
 
 dateSelect.addEventListener('change', () => {
     dateCustom.value = dateSelect.value;
-    resetOtherButton();
     updatePreview();
-});
-
-dateOtherBtn.addEventListener('click', () => {
-    if (typeof dateCustom.showPicker === 'function') {
-        try {
-            dateCustom.showPicker();
-            return;
-        } catch (e) {
-            // fall through
-        }
-    }
-    dateCustom.focus();
-    dateCustom.click();
 });
 
 dateCustom.addEventListener('change', () => {
     const matchOption = Array.from(dateSelect.options).find(o => o.value === dateCustom.value);
-    if (matchOption) {
-        dateSelect.value = dateCustom.value;
-        resetOtherButton();
-    } else {
-        dateSelect.value = '';
-        showPickedOnButton(dateCustom.value);
-    }
+    dateSelect.value = matchOption ? dateCustom.value : '';
     updatePreview();
 });
-
-function resetOtherButton() {
-    dateOtherText.textContent = 'その他の日付を選択';
-    dateOtherBtn.classList.remove('has-date');
-}
-
-function showPickedOnButton(ymdStr) {
-    if (!ymdStr) {
-        resetOtherButton();
-        return;
-    }
-    const [y, m, d] = ymdStr.split('-').map(Number);
-    const date = new Date(y, m - 1, d);
-    dateOtherText.textContent = formatLabel(date);
-    dateOtherBtn.classList.add('has-date');
-}
 
 function initDateSelector() {
     const options = generateWeekendOptions();
