@@ -179,6 +179,17 @@ main {
     display: flex;
     gap: 8px;
     align-items: center;
+    flex-wrap: wrap;
+}
+
+.date-wrap .select-input {
+    flex: 2;
+    min-width: 160px;
+}
+
+.date-wrap .date-input {
+    flex: 1;
+    min-width: 140px;
 }
 
 .name-wrap {

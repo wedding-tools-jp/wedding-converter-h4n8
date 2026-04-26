@@ -76,23 +76,16 @@ resetBtn.addEventListener('click', () => {
 convertBtn.addEventListener('click', convertToPptx);
 customerName.addEventListener('input', updatePreview);
 dateSelect.addEventListener('change', () => {
-    if (dateSelect.value === '__other__') {
-        dateCustom.style.display = 'inline-block';
-        if (!dateCustom.value) dateCustom.value = formatYMD(new Date());
-        dateCustom.focus();
-    } else {
-        dateCustom.style.display = 'none';
-    }
+    dateCustom.value = dateSelect.value;
     updatePreview();
 });
-dateCustom.addEventListener('change', updatePreview);
+dateCustom.addEventListener('change', () => {
+    const matchOption = Array.from(dateSelect.options).find(o => o.value === dateCustom.value);
+    dateSelect.value = matchOption ? dateCustom.value : '';
+    updatePreview();
+});
 
 function initDateSelector() {
-    const otherOpt = document.createElement('option');
-    otherOpt.value = '__other__';
-    otherOpt.textContent = 'その他の日付を入力...';
-    dateSelect.appendChild(otherOpt);
-
     const options = generateWeekendOptions();
     const defaultDate = formatYMD(getDefaultDate());
 
@@ -103,6 +96,8 @@ function initDateSelector() {
         if (opt.value === defaultDate) option.selected = true;
         dateSelect.appendChild(option);
     });
+
+    dateCustom.value = defaultDate;
 
     updatePreview();
 }
@@ -151,10 +146,7 @@ function formatLabel(d) {
 }
 
 function getCurrentDateStr() {
-    if (dateSelect.value === '__other__') {
-        return dateCustom.value || '';
-    }
-    return dateSelect.value;
+    return dateCustom.value || dateSelect.value || '';
 }
 
 function sanitizeName(name) {
