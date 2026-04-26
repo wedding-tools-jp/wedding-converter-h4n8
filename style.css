@@ -13,9 +13,9 @@ body {
 }
 
 .container {
-    max-width: 800px;
+    max-width: 1600px;
     margin: 0 auto;
-    padding: 40px 20px;
+    padding: 32px 24px;
 }
 
 header {
@@ -38,8 +38,133 @@ h1 {
 main {
     background: white;
     border-radius: 16px;
-    padding: 40px;
+    padding: 32px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: minmax(380px, 460px) 1fr;
+    gap: 32px;
+    align-items: start;
+}
+
+.left-pane {
+    min-width: 0;
+}
+
+.right-pane {
+    min-width: 0;
+}
+
+.preview-area {
+    background: #fafbfc;
+    border: 1px solid #e8ecf3;
+    border-radius: 12px;
+    min-height: 480px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.preview-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #95a5a6;
+    text-align: center;
+}
+
+.preview-empty svg {
+    color: #c5cdd9;
+}
+
+.preview-empty p {
+    font-size: 14px;
+}
+
+.preview-empty-sub {
+    font-size: 12px;
+    color: #b8c5d6;
+}
+
+.preview-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    flex: 1;
+}
+
+.preview-grid.cols-2 {
+    grid-template-columns: 1fr 1fr;
+}
+
+.preview-card {
+    background: #2c3e50;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.preview-card-img {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a2a3a;
+    padding: 8px;
+    min-height: 200px;
+}
+
+.preview-card-img img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.preview-card-meta {
+    background: white;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #6c7a89;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.preview-card-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #2c3e50;
+}
+
+.preview-card-pages {
+    color: #95a5a6;
+    font-size: 11px;
+    flex-shrink: 0;
+}
+
+.preview-loading {
+    color: #95a5a6;
+    font-size: 13px;
+    padding: 40px;
+}
+
+@media (max-width: 1024px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+    .container {
+        max-width: 800px;
+    }
 }
 
 .drop-zone {

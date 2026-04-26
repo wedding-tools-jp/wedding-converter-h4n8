@@ -5,9 +5,11 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 const SLIDE_W = 13.333;
 const SLIDE_H = 7.5;
 const PDF_RENDER_SCALE = 2.0;
+const PREVIEW_RENDER_SCALE = 1.2;
 const BG_COLOR = '000000';
 const WEEKEND_RANGE_MONTHS = 3;
 const DOW_LABELS = ['日', '月', '火', '水', '木', '金', '土'];
+const MAX_FILES = 2;
 
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
@@ -26,6 +28,8 @@ const dateCustom = document.getElementById('dateCustom');
 const dateIconBtn = document.getElementById('dateIconBtn');
 const customerName = document.getElementById('customerName');
 const filenamePreview = document.getElementById('filenamePreview');
+const previewEmpty = document.getElementById('previewEmpty');
+const previewGrid = document.getElementById('previewGrid');
 
 let selectedFiles = [];
 
@@ -62,6 +66,7 @@ clearBtn.addEventListener('click', () => {
     selectedFiles = [];
     customerName.value = '';
     renderFileList();
+    renderPreviews();
     updatePreview();
 });
 
@@ -69,6 +74,7 @@ resetBtn.addEventListener('click', () => {
     selectedFiles = [];
     customerName.value = '';
     renderFileList();
+    renderPreviews();
     updatePreview();
     result.style.display = 'none';
     dropZone.style.display = 'block';
@@ -202,8 +208,20 @@ function handleFiles(files) {
         alert(`${files.length - accepted.length} 個のファイルは対応していない形式のためスキップされました。`);
     }
 
-    selectedFiles = [...selectedFiles, ...accepted];
+    const remaining = MAX_FILES - selectedFiles.length;
+    if (remaining <= 0) {
+        alert(`同時に処理できるファイルは ${MAX_FILES} 個までです。`);
+        return;
+    }
+
+    const toAdd = accepted.slice(0, remaining);
+    if (accepted.length > remaining) {
+        alert(`同時に処理できるファイルは ${MAX_FILES} 個までです。最初の ${toAdd.length} 個だけ追加しました。`);
+    }
+
+    selectedFiles = [...selectedFiles, ...toAdd];
     renderFileList();
+    renderPreviews();
     updatePreview();
 }
 
@@ -234,6 +252,7 @@ function renderFileList() {
             const idx = parseInt(e.target.dataset.index);
             selectedFiles.splice(idx, 1);
             renderFileList();
+            renderPreviews();
             updatePreview();
         });
     });
@@ -333,6 +352,7 @@ async function convertToPptx() {
         result.style.display = 'block';
         selectedFiles = [];
         customerName.value = '';
+        renderPreviews();
         updatePreview();
     } catch (err) {
         console.error(err);
@@ -400,4 +420,72 @@ async function renderPdfPage(pdf, pageNum) {
     await page.render({ canvasContext: ctx, viewport }).promise;
 
     return canvas.toDataURL('image/jpeg', 0.92);
+}
+
+async function renderPreviews() {
+    if (selectedFiles.length === 0) {
+        previewEmpty.style.display = 'flex';
+        previewGrid.style.display = 'none';
+        previewGrid.innerHTML = '';
+        previewGrid.classList.remove('cols-2');
+        return;
+    }
+
+    previewEmpty.style.display = 'none';
+    previewGrid.style.display = 'grid';
+    previewGrid.classList.toggle('cols-2', selectedFiles.length === 2);
+    previewGrid.innerHTML = '';
+
+    for (const file of selectedFiles) {
+        const card = document.createElement('div');
+        card.className = 'preview-card';
+        card.innerHTML = `
+            <div class="preview-card-img"><div class="preview-loading">読み込み中...</div></div>
+            <div class="preview-card-meta">
+                <span class="preview-card-name">${escapeHtml(file.name)}</span>
+                <span class="preview-card-pages"></span>
+            </div>
+        `;
+        previewGrid.appendChild(card);
+
+        renderPreviewIntoCard(file, card).catch(err => {
+            console.error(err);
+            const imgWrap = card.querySelector('.preview-card-img');
+            imgWrap.innerHTML = '<div class="preview-loading">プレビュー失敗</div>';
+        });
+    }
+}
+
+async function renderPreviewIntoCard(file, card) {
+    const ext = file.name.toLowerCase().split('.').pop();
+    const imgWrap = card.querySelector('.preview-card-img');
+    const pagesLabel = card.querySelector('.preview-card-pages');
+
+    if (ext === 'pdf') {
+        const pdf = await loadPdf(file);
+        pagesLabel.textContent = `${pdf.numPages}ページ`;
+        const dataUrl = await renderPdfPagePreview(pdf, 1);
+        const img = new Image();
+        img.src = dataUrl;
+        imgWrap.innerHTML = '';
+        imgWrap.appendChild(img);
+    } else {
+        const dataUrl = await fileToDataUrl(file);
+        pagesLabel.textContent = '画像';
+        const img = new Image();
+        img.src = dataUrl;
+        imgWrap.innerHTML = '';
+        imgWrap.appendChild(img);
+    }
+}
+
+async function renderPdfPagePreview(pdf, pageNum) {
+    const page = await pdf.getPage(pageNum);
+    const viewport = page.getViewport({ scale: PREVIEW_RENDER_SCALE });
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext('2d');
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    return canvas.toDataURL('image/jpeg', 0.85);
 }
