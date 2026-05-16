@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>席次表PowerPoint変換ツール</title>
+    <title>席次表 IDS Package 変換ツール</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>席次表 → PowerPoint 変換</h1>
-            <p class="subtitle">PDF・JPEG・PNG をスライドに変換します（16:9 / レイアウト維持）</p>
+            <h1>席次表 → IDS Package 変換 <span class="app-version">v2.0</span></h1>
+            <p class="subtitle">PDF・JPEG・PNG から会場再生用パッケージを生成し、USB に書き出します</p>
         </header>
 
         <main class="layout">
@@ -63,9 +63,13 @@
                 </div>
 
                 <div class="actions">
-                    <button id="convertBtn" class="btn-primary btn-large" disabled>PowerPointに変換</button>
+                    <button id="convertBtn" class="btn-primary btn-large" disabled>USB に書き出す</button>
                     <button id="clearBtn" class="btn-secondary">クリア</button>
                 </div>
+                <p class="usb-hint">
+                    <strong>注意：</strong> 書き出し先は<strong>USB ドライブのフォルダ</strong>を選んでください。
+                    既存の「IDS Package」フォルダは上書きされます。
+                </p>
             </div>
 
             <div id="progress" class="progress" style="display:none;">
@@ -79,7 +83,7 @@
                 <svg class="check-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="20 6 9 17 4 12"/>
                 </svg>
-                <p class="result-text">変換完了！ダウンロードが始まります。</p>
+                <p class="result-text">USB への書き出しが完了しました。<br>USB を取り外して会場へお持ちください。</p>
                 <button id="resetBtn" class="btn-secondary">続けて別のファイルを変換</button>
             </div>
           </section>
@@ -107,17 +111,8 @@
         </footer>
     </div>
 
-    <link rel="modulepreload"
-          href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs"
-          integrity="sha384-uwJM5C0hGZH5Ed/vHx4Ht1PUd8ABIDVIcLbHydZOdFL5eTUG8Jdr32xNVIyn0kYH"
-          crossorigin="anonymous">
-    <link rel="modulepreload"
-          href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs"
-          integrity="sha384-NVnhtZrGsIwDcnD5XVrDINOVzrQT0KzaOPpVmavjhwAaVWUtLcgQW7Cua6BKLsEA"
-          crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@v3.12.0/dist/pptxgen.bundle.js"
-            integrity="sha384-Cck14aA9cifjYolcnjebXRfWGkz5ltHMBiG4px/j8GS+xQcb7OhNQWZYyWjQ+UwQ"
-            crossorigin="anonymous"></script>
+    <link rel="modulepreload" href="./assets/vendor/pdfjs/pdf.min.mjs">
+    <link rel="modulepreload" href="./assets/vendor/pdfjs/pdf.worker.min.mjs">
     <script type="module" src="app.js"></script>
 </body>
 </html>

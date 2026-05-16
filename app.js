@@ -1,15 +1,20 @@
-import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs';
+import {
+    loadPdf,
+    renderPdfPageToCanvas,
+    renderPdfPagePreviewDataUrl,
+    fileToDataUrl,
+    fileToCanvas,
+} from './pdf-utils.js';
+import { buildPpt } from './ppt-builder.js';
+import { buildIdsPackage, makePptFilename } from './ids-csv.js';
+import { pickUsbDirectory, writeIdsPackage, isSupported as fsIsSupported, UserCancelled } from './filesystem.js';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs';
-
-const SLIDE_W = 13.333;
-const SLIDE_H = 7.5;
-const PDF_RENDER_SCALE = 2.0;
-const PREVIEW_RENDER_SCALE = 1.2;
-const BG_COLOR = '000000';
 const WEEKEND_RANGE_MONTHS = 3;
 const DOW_LABELS = ['日', '月', '火', '水', '木', '金', '土'];
 const MAX_FILES = 2;
+const MAX_PAGES_PER_PDF = 50;
+const DEFAULT_DISPLAY_SECONDS = 30;
+const WIN_RESERVED = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i;
 
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
@@ -34,28 +39,13 @@ const previewGrid = document.getElementById('previewGrid');
 let selectedFiles = [];
 
 initDateSelector();
+checkBrowserSupport();
 
-selectBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    fileInput.click();
-});
-
+selectBtn.addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
 dropZone.addEventListener('click', () => fileInput.click());
-
-fileInput.addEventListener('change', (e) => {
-    handleFiles(Array.from(e.target.files));
-    fileInput.value = '';
-});
-
-dropZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropZone.classList.add('dragover');
-});
-
-dropZone.addEventListener('dragleave', () => {
-    dropZone.classList.remove('dragover');
-});
-
+fileInput.addEventListener('change', (e) => { handleFiles(Array.from(e.target.files)); fileInput.value = ''; });
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
 dropZone.addEventListener('drop', (e) => {
     e.preventDefault();
     dropZone.classList.remove('dragover');
@@ -80,7 +70,7 @@ resetBtn.addEventListener('click', () => {
     dropZone.style.display = 'block';
 });
 
-convertBtn.addEventListener('click', convertToPptx);
+convertBtn.addEventListener('click', exportToUsb);
 customerName.addEventListener('input', updatePreview);
 
 dateSelect.addEventListener('change', () => {
@@ -90,12 +80,7 @@ dateSelect.addEventListener('change', () => {
 
 dateIconBtn.addEventListener('click', () => {
     if (typeof dateCustom.showPicker === 'function') {
-        try {
-            dateCustom.showPicker();
-            return;
-        } catch (e) {
-            // fall through
-        }
+        try { dateCustom.showPicker(); return; } catch (e) { /* fall through */ }
     }
     dateCustom.focus();
     dateCustom.click();
@@ -107,10 +92,16 @@ dateCustom.addEventListener('change', () => {
     updatePreview();
 });
 
+function checkBrowserSupport() {
+    if (!fsIsSupported()) {
+        alert('このブラウザは USB への直接書き出しに対応していません。\nChrome または Edge をご使用ください。');
+        convertBtn.disabled = true;
+    }
+}
+
 function initDateSelector() {
     const options = generateWeekendOptions();
     const defaultDate = formatYMD(getDefaultDate());
-
     options.forEach(opt => {
         const option = document.createElement('option');
         option.value = opt.value;
@@ -118,9 +109,7 @@ function initDateSelector() {
         if (opt.value === defaultDate) option.selected = true;
         dateSelect.appendChild(option);
     });
-
     dateCustom.value = defaultDate;
-
     updatePreview();
 }
 
@@ -140,7 +129,6 @@ function generateWeekendOptions() {
     start.setHours(0, 0, 0, 0);
     const end = new Date(start);
     end.setMonth(start.getMonth() + WEEKEND_RANGE_MONTHS);
-
     const options = [];
     const cursor = new Date(start);
     while (cursor <= end) {
@@ -154,43 +142,46 @@ function generateWeekendOptions() {
 }
 
 function formatYMD(d) {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function formatLabel(d) {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}/${m}/${day} (${DOW_LABELS[d.getDay()]})`;
+    return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')} (${DOW_LABELS[d.getDay()]})`;
 }
 
 function getCurrentDateStr() {
     return dateCustom.value || dateSelect.value || '';
 }
 
-function sanitizeName(name) {
-    return name.replace(/[<>:"/\\|?*\x00-\x1f]/g, '_').trim();
+function parseDate(ymd) {
+    if (!ymd) return null;
+    const [y, m, d] = ymd.split('-').map(Number);
+    return new Date(y, m - 1, d);
 }
 
-function buildFilename() {
+function sanitizeName(name) {
+    let s = name.replace(/[<>:"/\\|?*\x00-\x1f]/g, '_').trim();
+    if (WIN_RESERVED.test(s)) s = '_' + s;
+    return s;
+}
+
+function buildLabel() {
     const dateStr = getCurrentDateStr();
     const ymd = dateStr.replace(/-/g, '');
     const rawName = customerName.value.trim().replace(/家$/, '');
     const name = sanitizeName(rawName);
     if (!ymd) return '';
-    if (!name) return `${ymd}.pptx`;
-    return `${ymd}_${name}家.pptx`;
+    if (!name) return `${ymd}`;
+    return `${ymd}_${name}家`;
 }
 
 function updatePreview() {
-    const fname = buildFilename();
-    const hasName = customerName.value.trim().length > 0;
+    const label = buildLabel();
+    const hasName = customerName.value.trim().replace(/家$/, '').length > 0;
+    const hasSanitized = sanitizeName(customerName.value.trim().replace(/家$/, '')).length > 0;
     const hasDate = getCurrentDateStr().length > 0;
-    filenamePreview.textContent = fname || '—';
-    convertBtn.disabled = !(hasName && hasDate && selectedFiles.length > 0);
+    filenamePreview.textContent = label || '—';
+    convertBtn.disabled = !(hasName && hasSanitized && hasDate && selectedFiles.length > 0 && fsIsSupported());
 }
 
 function handleFiles(files) {
@@ -198,27 +189,22 @@ function handleFiles(files) {
         const ext = f.name.toLowerCase().split('.').pop();
         return ['pdf', 'jpg', 'jpeg', 'png'].includes(ext);
     });
-
     if (accepted.length === 0) {
         alert('対応していないファイル形式です。PDF・JPEG・PNG のみ対応しています。');
         return;
     }
-
     if (accepted.length < files.length) {
         alert(`${files.length - accepted.length} 個のファイルは対応していない形式のためスキップされました。`);
     }
-
     const remaining = MAX_FILES - selectedFiles.length;
     if (remaining <= 0) {
         alert(`同時に処理できるファイルは ${MAX_FILES} 個までです。`);
         return;
     }
-
     const toAdd = accepted.slice(0, remaining);
     if (accepted.length > remaining) {
         alert(`同時に処理できるファイルは ${MAX_FILES} 個までです。最初の ${toAdd.length} 個だけ追加しました。`);
     }
-
     selectedFiles = [...selectedFiles, ...toAdd];
     renderFileList();
     renderPreviews();
@@ -226,27 +212,21 @@ function handleFiles(files) {
 }
 
 function renderFileList() {
-    if (selectedFiles.length === 0) {
-        fileList.style.display = 'none';
-        return;
-    }
-
+    if (selectedFiles.length === 0) { fileList.style.display = 'none'; return; }
     fileList.style.display = 'block';
     fileListItems.innerHTML = '';
-
     selectedFiles.forEach((file, index) => {
         const ext = file.name.toLowerCase().split('.').pop();
         const isPdf = ext === 'pdf';
         const li = document.createElement('li');
         li.innerHTML = `
-            <div class="file-icon ${isPdf ? 'pdf' : 'img'}">${isPdf ? 'PDF' : ext.toUpperCase()}</div>
+            <div class="file-icon ${isPdf ? 'pdf' : 'img'}">${isPdf ? 'PDF' : escapeHtml(ext.toUpperCase())}</div>
             <div class="file-name">${escapeHtml(file.name)}</div>
             <div class="file-size">${formatSize(file.size)}</div>
             <button class="file-remove" data-index="${index}" title="削除">×</button>
         `;
         fileListItems.appendChild(li);
     });
-
     fileListItems.querySelectorAll('.file-remove').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.index);
@@ -276,13 +256,76 @@ function updateProgress(current, total, label) {
     progressText.textContent = `${label}（${current} / ${total}）`;
 }
 
-async function convertToPptx() {
+// Open every PDF once, validate page counts, then render in a single pass.
+// Returns { slides: Canvas[], cleanup: () => Promise<void> } so PDF.js workers can be released.
+async function collectSlideCanvases() {
+    const opened = [];
+    let totalPages = 0;
+    for (const file of selectedFiles) {
+        const ext = file.name.toLowerCase().split('.').pop();
+        if (ext === 'pdf') {
+            const pdf = await loadPdf(file);
+            if (pdf.numPages > MAX_PAGES_PER_PDF) {
+                await Promise.all(opened.filter(o => o.pdf).map(o => o.pdf.destroy().catch(() => {})));
+                await pdf.destroy().catch(() => {});
+                const e = new Error(`PDF のページ数が多すぎます（${pdf.numPages}ページ / 上限 ${MAX_PAGES_PER_PDF}ページ）: ${file.name}`);
+                e.name = 'TooManyPagesError';
+                throw e;
+            }
+            opened.push({ file, pdf });
+            totalPages += pdf.numPages;
+        } else {
+            opened.push({ file, pdf: null });
+            totalPages += 1;
+        }
+    }
+
+    const slides = [];
+    let processed = 0;
+    try {
+        for (const o of opened) {
+            if (o.pdf) {
+                for (let p = 1; p <= o.pdf.numPages; p++) {
+                    updateProgress(processed, totalPages, 'ページを変換中');
+                    slides.push(await renderPdfPageToCanvas(o.pdf, p));
+                    processed++;
+                }
+            } else {
+                updateProgress(processed, totalPages, 'ページを変換中');
+                slides.push(await fileToCanvas(o.file));
+                processed++;
+            }
+        }
+    } finally {
+        await Promise.all(opened.filter(o => o.pdf).map(o => o.pdf.destroy().catch(() => {})));
+    }
+    return slides;
+}
+
+async function exportToUsb() {
     if (selectedFiles.length === 0) return;
-    const filename = buildFilename();
-    if (!filename) {
-        alert('日付と客名を入力してください。');
+    const dateStr = getCurrentDateStr();
+    const date = parseDate(dateStr);
+    if (!date) { alert('日付を選択してください。'); return; }
+    const label = buildLabel();
+    if (!label) { alert('客名を入力してください。'); return; }
+
+    // 1. Ask the user to pick the USB directory FIRST, while we still have the user gesture.
+    let usbHandle;
+    try {
+        usbHandle = await pickUsbDirectory();
+    } catch (err) {
+        if (err instanceof UserCancelled) return;
+        console.error(err);
+        alert('書き出し先の選択に失敗しました。');
         return;
     }
+    const confirmed = confirm(
+        `「${usbHandle.name}」に書き出します。\n\n` +
+        `本当にこのフォルダで間違いありませんか？\n` +
+        `（USB ドライブ以外を選んでいる場合は「キャンセル」を押してください）`
+    );
+    if (!confirmed) return;
 
     fileList.style.display = 'none';
     dropZone.style.display = 'none';
@@ -291,62 +334,30 @@ async function convertToPptx() {
     progressText.textContent = '画像を準備中...';
 
     try {
-        const slideImages = [];
-
-        let totalPages = 0;
-        for (const file of selectedFiles) {
-            const ext = file.name.toLowerCase().split('.').pop();
-            if (ext === 'pdf') {
-                const pdf = await loadPdf(file);
-                totalPages += pdf.numPages;
-                slideImages.push({ type: 'pdf', pdf, file });
-            } else {
-                totalPages += 1;
-                slideImages.push({ type: 'image', file });
-            }
+        const canvases = await collectSlideCanvases();
+        const total = canvases.length;
+        const pptFiles = [];
+        for (let i = 0; i < total; i++) {
+            updateProgress(i, total, 'PowerPointを生成中');
+            const filename = makePptFilename(date, i, total);
+            const bytes = await buildPpt(canvases[i]);
+            pptFiles.push({ filename, bytes, displaySeconds: DEFAULT_DISPLAY_SECONDS });
+            // free canvas memory
+            canvases[i].width = 0;
+            canvases[i].height = 0;
         }
 
-        let processed = 0;
-        const renderedSlides = [];
+        progressText.textContent = 'パッケージを構築中...';
+        const tree = buildIdsPackage({
+            pptFiles,
+            scheduleStartDate: date,
+            timestamp: new Date(),
+        });
 
-        for (const item of slideImages) {
-            if (item.type === 'pdf') {
-                for (let p = 1; p <= item.pdf.numPages; p++) {
-                    updateProgress(processed, totalPages, 'ページを変換中');
-                    const dataUrl = await renderPdfPage(item.pdf, p);
-                    const dims = await getImageDimensions(dataUrl);
-                    renderedSlides.push({ dataUrl, dims });
-                    processed++;
-                }
-            } else {
-                updateProgress(processed, totalPages, 'ページを変換中');
-                const dataUrl = await fileToDataUrl(item.file);
-                const dims = await getImageDimensions(dataUrl);
-                renderedSlides.push({ dataUrl, dims });
-                processed++;
-            }
-        }
-
-        updateProgress(processed, totalPages, 'PowerPointを生成中');
-
-        const pptx = new PptxGenJS();
-        pptx.defineLayout({ name: 'CUSTOM_16_9', width: SLIDE_W, height: SLIDE_H });
-        pptx.layout = 'CUSTOM_16_9';
-
-        for (const slide of renderedSlides) {
-            const s = pptx.addSlide();
-            s.background = { color: BG_COLOR };
-            const fit = calculateFit(slide.dims.width, slide.dims.height);
-            s.addImage({
-                data: slide.dataUrl,
-                x: fit.x,
-                y: fit.y,
-                w: fit.w,
-                h: fit.h
-            });
-        }
-
-        await pptx.writeFile({ fileName: filename });
+        progressText.textContent = 'USB に書き込み中...';
+        await writeIdsPackage(usbHandle, tree, ({ done, total, label: itemLabel }) => {
+            updateProgress(done, total, 'USB に書き込み中');
+        });
 
         progress.style.display = 'none';
         result.style.display = 'block';
@@ -356,70 +367,21 @@ async function convertToPptx() {
         updatePreview();
     } catch (err) {
         console.error(err);
-        alert('変換中にエラーが発生しました。Ctrl+F5で再読み込みしてからお試しください。');
+        let msg = '書き出し中にエラーが発生しました。';
+        if (err && err.name === 'QuotaExceededError') {
+            msg = 'USB の空き容量が不足しています。空きを確保してから再度お試しください。';
+        } else if (err && err.name === 'NotAllowedError') {
+            msg = 'USB への書き込みが許可されませんでした。書き込み権限のあるドライブを選択してください。';
+        } else if (err && err.name === 'NoModificationAllowedError') {
+            msg = 'USB が書き込み禁止になっています。ロックスイッチや別ファイルでの使用を確認してください。';
+        } else if (err && err.name === 'TooManyPagesError') {
+            msg = err.message;
+        }
+        alert(msg);
         progress.style.display = 'none';
         dropZone.style.display = 'block';
         renderFileList();
     }
-}
-
-function calculateFit(imgW, imgH) {
-    const slideRatio = SLIDE_W / SLIDE_H;
-    const imgRatio = imgW / imgH;
-
-    let w, h, x, y;
-
-    if (imgRatio > slideRatio) {
-        w = SLIDE_W;
-        h = SLIDE_W / imgRatio;
-        x = 0;
-        y = (SLIDE_H - h) / 2;
-    } else {
-        h = SLIDE_H;
-        w = SLIDE_H * imgRatio;
-        x = (SLIDE_W - w) / 2;
-        y = 0;
-    }
-
-    return { x, y, w, h };
-}
-
-function fileToDataUrl(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(new Error('ファイル読み込みエラー: ' + file.name));
-        reader.readAsDataURL(file);
-    });
-}
-
-function getImageDimensions(dataUrl) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
-        img.onerror = () => reject(new Error('画像の読み込みに失敗しました'));
-        img.src = dataUrl;
-    });
-}
-
-async function loadPdf(file) {
-    const arrayBuffer = await file.arrayBuffer();
-    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-    return await loadingTask.promise;
-}
-
-async function renderPdfPage(pdf, pageNum) {
-    const page = await pdf.getPage(pageNum);
-    const viewport = page.getViewport({ scale: PDF_RENDER_SCALE });
-
-    const canvas = document.createElement('canvas');
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    const ctx = canvas.getContext('2d');
-
-    await page.render({ canvasContext: ctx, viewport }).promise;
-
-    return canvas.toDataURL('image/jpeg', 0.92);
 }
 
 async function renderPreviews() {
@@ -430,12 +392,10 @@ async function renderPreviews() {
         previewGrid.classList.remove('cols-2');
         return;
     }
-
     previewEmpty.style.display = 'none';
     previewGrid.style.display = 'grid';
     previewGrid.classList.toggle('cols-2', selectedFiles.length === 2);
     previewGrid.innerHTML = '';
-
     for (const file of selectedFiles) {
         const card = document.createElement('div');
         card.className = 'preview-card';
@@ -447,11 +407,9 @@ async function renderPreviews() {
             </div>
         `;
         previewGrid.appendChild(card);
-
         renderPreviewIntoCard(file, card).catch(err => {
             console.error(err);
-            const imgWrap = card.querySelector('.preview-card-img');
-            imgWrap.innerHTML = '<div class="preview-loading">プレビュー失敗</div>';
+            card.querySelector('.preview-card-img').innerHTML = '<div class="preview-loading">プレビュー失敗</div>';
         });
     }
 }
@@ -460,15 +418,18 @@ async function renderPreviewIntoCard(file, card) {
     const ext = file.name.toLowerCase().split('.').pop();
     const imgWrap = card.querySelector('.preview-card-img');
     const pagesLabel = card.querySelector('.preview-card-pages');
-
     if (ext === 'pdf') {
         const pdf = await loadPdf(file);
-        pagesLabel.textContent = `${pdf.numPages}ページ`;
-        const dataUrl = await renderPdfPagePreview(pdf, 1);
-        const img = new Image();
-        img.src = dataUrl;
-        imgWrap.innerHTML = '';
-        imgWrap.appendChild(img);
+        try {
+            pagesLabel.textContent = `${pdf.numPages}ページ`;
+            const dataUrl = await renderPdfPagePreviewDataUrl(pdf, 1);
+            const img = new Image();
+            img.src = dataUrl;
+            imgWrap.innerHTML = '';
+            imgWrap.appendChild(img);
+        } finally {
+            await pdf.destroy().catch(() => {});
+        }
     } else {
         const dataUrl = await fileToDataUrl(file);
         pagesLabel.textContent = '画像';
@@ -477,15 +438,4 @@ async function renderPreviewIntoCard(file, card) {
         imgWrap.innerHTML = '';
         imgWrap.appendChild(img);
     }
-}
-
-async function renderPdfPagePreview(pdf, pageNum) {
-    const page = await pdf.getPage(pageNum);
-    const viewport = page.getViewport({ scale: PREVIEW_RENDER_SCALE });
-    const canvas = document.createElement('canvas');
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    const ctx = canvas.getContext('2d');
-    await page.render({ canvasContext: ctx, viewport }).promise;
-    return canvas.toDataURL('image/jpeg', 0.85);
 }
