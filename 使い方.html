@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>使い方 - 席次表PowerPoint変換</title>
+    <title>使い方 - 席次表 IDS Package 変換</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -29,6 +29,17 @@
             margin-bottom: 8px;
             font-weight: 600;
         }
+        .app-version {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: 500;
+            color: #ffffff;
+            background: #5b8dee;
+            border-radius: 10px;
+            vertical-align: middle;
+        }
         .lead {
             color: #6c7a89;
             font-size: 14px;
@@ -51,6 +62,16 @@
             color: #1e6b3a;
         }
         .privacy-banner strong { color: #14532d; }
+        .pre-banner {
+            background: #fef3e7;
+            border-left: 4px solid #e67e22;
+            padding: 16px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #6e3a05;
+            margin-top: 16px;
+        }
+        .pre-banner strong { color: #4a2602; }
         .step {
             margin-bottom: 32px;
             padding-bottom: 32px;
@@ -126,6 +147,15 @@
             margin: 12px 0 0 44px;
             color: #1e3a5f;
         }
+        .danger {
+            background: #fdecea;
+            border-left: 4px solid #e74c3c;
+            padding: 12px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            margin: 12px 0 0 44px;
+            color: #78180f;
+        }
         ul {
             padding-left: 22px;
         }
@@ -155,12 +185,20 @@
 </head>
 <body>
     <div class="container">
-        <h1>席次表 → PowerPoint 変換 使い方</h1>
-        <p class="lead">席次表のPDFや画像を、そのままPowerPointスライドにできるツールです。</p>
+        <h1>席次表 → IDS Package 変換 使い方<span class="app-version">v2.0</span></h1>
+        <p class="lead">席次表の PDF や画像から、会場の再生機器（Panasonic PW-DPC01）で使えるパッケージを作って、USB に直接書き出すツールです。</p>
 
         <div class="privacy-banner">
             <strong>安心してお使いいただけます</strong><br>
             ファイルは皆さまのパソコンの中だけで処理されます。インターネット上にアップロードされることはありません。
+        </div>
+
+        <div class="pre-banner">
+            <strong>はじめにご準備ください</strong>
+            <ul style="margin-top: 6px;">
+                <li>USB メモリ（<strong>FAT32 形式</strong>でフォーマット済みのもの。会場の機器が exFAT を認識しないため）</li>
+                <li>ブラウザは <strong>Google Chrome</strong> または <strong>Microsoft Edge</strong>（USB への書き込みに対応しているため）</li>
+            </ul>
         </div>
 
         <h2>使い方の流れ</h2>
@@ -171,115 +209,117 @@
                 <div class="step-title">ファイルを選ぶ</div>
             </div>
             <div class="step-body">
-                <p>席次表のファイルを画面中央のエリアに<strong>ドラッグ＆ドロップ</strong>するか、<strong>「ファイルを選択」ボタン</strong>をクリックして選びます。</p>
+                <p>席次表のファイルを左側のエリアに<strong>ドラッグ＆ドロップ</strong>するか、<strong>「ファイルを選択」ボタン</strong>から選びます。</p>
                 <p>対応形式: <code>PDF</code> / <code>JPEG</code> / <code>PNG</code></p>
             </div>
             <div class="screenshot">
-                <img src="images/01.jpg" alt="ドラッグ＆ドロップエリア">
-                <div class="screenshot-cap">ファイルをここに置くか、ボタンから選択</div>
+                <img src="images/v2-01-empty.png" alt="開いた直後の画面">
+                <div class="screenshot-cap">左側にファイル選択エリア、右側がプレビュー</div>
             </div>
             <div class="note">
-                同時に処理できるファイルは<strong>最大2件</strong>までです。
+                同時に処理できるファイルは<strong>最大 2 件</strong>までです。<br>
+                PDF の場合は<strong>1 ファイルあたり最大 50 ページ</strong>までです。
+            </div>
+            <div class="screenshot">
+                <img src="images/v2-02-picker.png" alt="ファイル選択ダイアログ">
+                <div class="screenshot-cap">パソコンから席次表ファイルを選びます</div>
             </div>
         </div>
 
         <div class="step">
             <div class="step-head">
                 <div class="step-num">2</div>
-                <div class="step-title">プレビューで確認する</div>
+                <div class="step-title">日付・ご両家名を入れてプレビューを確認</div>
             </div>
             <div class="step-body">
-                <p>右側に、PowerPointで表示されるイメージそのままの<strong>16:9プレビュー</strong>が表示されます。黒い余白の入り方も実際のスライドと同じです。</p>
+                <p>ファイルを選ぶと、入力欄が表示されます。</p>
+                <ul>
+                    <li><strong>日付</strong>：ドロップダウンに直近 3 ヶ月の土日が並んでいます。平日や祝日のときは右のカレンダーアイコンから選んでください。</li>
+                    <li><strong>ご両家名</strong>：「両家のお名前を「・」でつないで」入れます（例: <code>神野・三本</code>）。「家」は自動で末尾に付きます。</li>
+                </ul>
+                <p>右側のプレビューは、会場のモニターでの見え方そのものです。<strong>左右に黒い余白</strong>が入った 16:9 の状態で表示されます。</p>
             </div>
             <div class="screenshot">
-                <img src="images/02.jpg" alt="プレビュー表示">
-                <div class="screenshot-cap">右側に本番イメージがリアルタイム表示</div>
+                <img src="images/v2-03-filled.png" alt="ファイルと情報を入力した状態">
+                <div class="screenshot-cap">入力するとボタンが有効になり、右側に本番イメージが出ます</div>
+            </div>
+            <div class="tip">
+                左下に「ファイル名: <strong>20260516_神野・三本家</strong>」のようにプレビューが出ます。間違いがないか確認してください。
             </div>
         </div>
 
         <div class="step">
             <div class="step-head">
                 <div class="step-num">3</div>
-                <div class="step-title">挙式日を選ぶ</div>
+                <div class="step-title">USB を挿して「USB に書き出す」</div>
             </div>
             <div class="step-body">
-                <p>左の<strong>「日付」ドロップダウン</strong>には、今日から3ヶ月先までの土日が並んでいます。直近の土日が最初から選ばれているので、そのまま使うか別の日を選んでください。</p>
+                <p>パソコンに <strong>USB メモリを挿してから</strong>、青い「USB に書き出す」ボタンを押します。</p>
+                <p>フォルダ選択画面が出るので、<strong>挿した USB メモリ（例: AXE DRIVE）を選んで「選択」</strong>をクリックします。</p>
             </div>
             <div class="screenshot">
-                <img src="images/03.jpg" alt="土日ドロップダウン">
-                <div class="screenshot-cap">土日が並んだドロップダウン</div>
+                <img src="images/v2-04-usb-pick.png" alt="USBドライブ選択画面">
+                <div class="screenshot-cap">左側のドライブ一覧から USB を選んで「選択」</div>
             </div>
-            <div class="step-body" style="margin-top: 16px;">
-                <p>平日や祝日に挙式の場合は、<strong>右側のカレンダーアイコン</strong>をクリックすると、好きな日付を選べるカレンダーが開きます。</p>
-            </div>
-            <div class="screenshot">
-                <img src="images/04.jpg" alt="カレンダー画面">
-                <div class="screenshot-cap">カレンダーから任意の日付を選択</div>
+            <div class="danger">
+                <strong>注意：</strong> 必ず USB メモリを選んでください。<strong>パソコンの内蔵ディスク（Macintosh HD など）や iCloud のフォルダを選ばないでください。</strong>
             </div>
         </div>
 
         <div class="step">
             <div class="step-head">
                 <div class="step-num">4</div>
-                <div class="step-title">ご両家名を入れる</div>
+                <div class="step-title">確認ダイアログで「OK」を押す</div>
             </div>
             <div class="step-body">
-                <p>「ご両家名」欄に<strong>両家のお名前を「・」でつないで</strong>入れてください（例: <code>三本・神野</code>）。</p>
-                <p>「家」は自動で末尾につくので、入力する必要はありません。</p>
-                <p>下にファイル名のプレビューが表示されます。確認してください。</p>
+                <p>ブラウザが「『〇〇』に書き出します。本当にこのフォルダで間違いありませんか？」と確認してきます。</p>
+                <p>USB の名前が表示されているのを確認して、<strong>「OK」</strong>を押してください。</p>
             </div>
             <div class="screenshot">
-                <img src="images/05.jpg" alt="ご両家名入力">
-                <div class="screenshot-cap">ファイル名は「日付_両家名家.pptx」に自動生成</div>
+                <img src="images/v2-05-confirm.png" alt="書き出し確認ダイアログ">
+                <div class="screenshot-cap">USB の名前が間違っていないか必ず確認</div>
+            </div>
+            <div class="note">
+                USB 内に既に「IDS Package」という名前のフォルダがある場合は、<strong>上書きされます</strong>（前回書き出した内容は消えます）。<br>
+                それ以外の USB の中身は触りません。
             </div>
         </div>
 
         <div class="step">
             <div class="step-head">
                 <div class="step-num">5</div>
-                <div class="step-title">PowerPointに変換</div>
+                <div class="step-title">完了したら USB を取り外す</div>
             </div>
             <div class="step-body">
-                <p><strong>「PowerPointに変換」ボタン</strong>をクリックすると、変換が始まります。</p>
-                <p>完了すると、PowerPointファイルの保存画面が出ます。<strong>そのまま「保存」をクリック</strong>してください（ファイル名は自動で入力済みです）。</p>
+                <p>緑のチェックマークと「USB への書き出しが完了しました。」の表示が出たら成功です。</p>
+                <p>パソコンから USB を取り外し、会場の再生機器（PW-DPC01）に挿してご使用ください。</p>
             </div>
             <div class="screenshot">
-                <img src="images/06.jpg" alt="保存ダイアログ">
-                <div class="screenshot-cap">ファイル名は自動入力されているのでそのまま保存</div>
-            </div>
-        </div>
-
-        <div class="step">
-            <div class="step-head">
-                <div class="step-num">6</div>
-                <div class="step-title">PowerPointで開く</div>
-            </div>
-            <div class="step-body">
-                <p>保存したファイルをダブルクリックするとPowerPointが開きます。すぐにスライド表示で投影できます。</p>
-            </div>
-            <div class="screenshot">
-                <img src="images/07.jpg" alt="PowerPoint表示結果">
-                <div class="screenshot-cap">プレビュー通りの仕上がりに</div>
+                <img src="images/v2-06-done.png" alt="書き出し完了画面">
+                <div class="screenshot-cap">この画面が出たら完了です</div>
             </div>
             <div class="tip">
-                投影時は <strong>F5キー</strong> でスライドショーが開始できます。
+                続けて別の席次表を変換したい場合は、「続けて別のファイルを変換」ボタンを押すと最初の画面に戻ります。
             </div>
         </div>
 
         <h2>よくある質問</h2>
 
         <div class="faq">
-            <h3>古いPowerPointでも開けますか？</h3>
-            <p>PowerPoint 2007以降であれば問題なく開けます。式場のWindows PCならまず大丈夫です。</p>
+            <h3>USB を選ぶ画面で USB が出てこない</h3>
+            <p>USB のフォーマットが <strong>FAT32（MS-DOS）</strong>になっているか確認してください。exFAT や NTFS だと会場の機器（PW-DPC01）が認識できません。フォーマットし直すと中のデータは全部消えるので注意してください。</p>
 
-            <h3>ファイルが大きくて時間がかかります</h3>
-            <p>大きなPDF（50MB以上）は変換に時間がかかります。途中でタブやブラウザを閉じないでください。</p>
+            <h3>「このブラウザは USB への直接書き出しに対応していません」と出る</h3>
+            <p>Safari や Firefox では USB に直接書き出せません。<strong>Google Chrome</strong> か <strong>Microsoft Edge</strong> でお試しください。</p>
 
-            <h3>推奨ブラウザは？</h3>
-            <p><strong>Google Chrome</strong> または <strong>Microsoft Edge</strong> を推奨します。</p>
+            <h3>変換に時間がかかります</h3>
+            <p>大きな PDF やページ数の多い PDF は時間がかかります。途中でタブやブラウザを閉じないでください。1 ファイル 50 ページが上限です。</p>
+
+            <h3>会場のモニターで席次表の左右が白くなってしまう</h3>
+            <p>v2.0 では<strong>左右が黒の余白</strong>になるように修正されています。もし白い場合は、ブラウザを <code>Cmd + Shift + R</code>（Windows は <code>Ctrl + F5</code>）で強制再読み込みして、画面上部に <span class="app-version">v2.0</span> のバッジが表示されているか確認してください。</p>
 
             <h3>うまく動かないとき</h3>
-            <p>ページを <code>Ctrl + F5</code> で再読み込みしてみてください。それでも改善しない場合は管理者までご連絡ください。</p>
+            <p>ページを <code>Cmd + Shift + R</code>（Windows は <code>Ctrl + F5</code>）で再読み込みしてみてください。それでも改善しない場合は管理者までご連絡ください。</p>
         </div>
     </div>
 </body>
